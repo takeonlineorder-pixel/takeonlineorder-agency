@@ -1,8 +1,4 @@
 // Supabase connection settings
-// 1. Go to supabase.com -> your project -> Settings -> API
-// 2. Copy "Project URL" into SUPABASE_URL below
-// 3. Copy "anon public" key into SUPABASE_ANON_KEY below
-// 4. Save this file, commit, and push -- Vercel will redeploy automatically
 
-window.SUPABASE_URL = "";        // e.g. "https://xxxxxxxx.supabase.co"
-window.SUPABASE_ANON_KEY = "";   // e.g. "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+window.SUPABASE_URL = "https://fwabikzwcjaevbmubnap.supabase.co";
+window.SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3YWJpa3p3Y2phZXZibXVibmFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczNjk4NjAsImV4cCI6MjEwMjk0NTg2MH0.QRnxPmha4tYc1NdFTjshE2_z0muuZzTZ_1oulNaPdQc";
