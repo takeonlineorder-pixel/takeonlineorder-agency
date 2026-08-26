@@ -232,7 +232,7 @@
     <p class="sub">Take Online Order replaces the 20–30% you're losing to third-party marketplaces with your own branded ordering system — so every sale, every customer, and every pound stays yours.</p>
     <div class="btn-row">
       <a class="btn-primary" href="#contact">Get Your Free Site Audit</a>
-      <a class="btn-ghost" href="http://demo.takeonlineorder.com">▶ Watch a 2-Minute Demo</a>
+      <button class="btn-ghost" onclick="openBookingModal()" style="cursor:pointer;">📅 Book For Consultation Now</button>
     </div>
     <div class="hero-note">No setup fees to start. No long-term contracts.</div>
 
@@ -501,6 +501,48 @@
   </div>
 </footer>
 
+<!-- Booking Modal -->
+<div id="booking-overlay" style="display:none; position:fixed; inset:0; background:rgba(10,13,16,0.6); z-index:200; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#ffffff; border-radius:18px; max-width:460px; width:100%; padding:34px; position:relative; box-shadow:0 30px 80px rgba(0,0,0,0.35);">
+    <button onclick="closeBookingModal()" style="position:absolute; top:18px; right:18px; background:none; border:none; font-size:22px; cursor:pointer; color:#8a9298;">×</button>
+    <div style="font-size:13px; font-weight:800; color:var(--accent); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px;">Book a Free Consultation</div>
+    <h3 style="font-size:22px; font-weight:900; margin-bottom:8px;">Pick a Time That Works for You</h3>
+    <p style="font-size:14px; color:var(--text-muted); margin-bottom:24px;">We'll confirm your slot by email within a few hours.</p>
+
+    <form id="booking-form">
+      <div style="display:flex; gap:12px; margin-bottom:12px;">
+        <input type="text" name="name" placeholder="Full name" required style="flex:1; padding:12px 14px; border-radius:9px; border:1px solid var(--border); background:#fafcfb; font-size:14px; font-family:inherit;">
+      </div>
+      <div style="display:flex; gap:12px; margin-bottom:12px;">
+        <input type="text" name="restaurant" placeholder="Restaurant name" required style="flex:1; padding:12px 14px; border-radius:9px; border:1px solid var(--border); background:#fafcfb; font-size:14px; font-family:inherit;">
+      </div>
+      <div style="display:flex; gap:12px; margin-bottom:12px;">
+        <input type="email" name="email" placeholder="Email address" required style="flex:1; padding:12px 14px; border-radius:9px; border:1px solid var(--border); background:#fafcfb; font-size:14px; font-family:inherit;">
+      </div>
+      <div style="display:flex; gap:12px; margin-bottom:12px;">
+        <input type="tel" name="phone" placeholder="Phone number" style="flex:1; padding:12px 14px; border-radius:9px; border:1px solid var(--border); background:#fafcfb; font-size:14px; font-family:inherit;">
+      </div>
+      <div style="display:flex; gap:12px; margin-bottom:12px;">
+        <input type="date" name="preferred_date" required style="flex:1; padding:12px 14px; border-radius:9px; border:1px solid var(--border); background:#fafcfb; font-size:14px; font-family:inherit;">
+        <select name="preferred_time" required style="flex:1; padding:12px 14px; border-radius:9px; border:1px solid var(--border); background:#fafcfb; font-size:14px; font-family:inherit;">
+          <option value="">Preferred time</option>
+          <option>9:00 AM</option>
+          <option>10:00 AM</option>
+          <option>11:00 AM</option>
+          <option>1:00 PM</option>
+          <option>2:00 PM</option>
+          <option>3:00 PM</option>
+          <option>4:00 PM</option>
+        </select>
+      </div>
+      <textarea name="notes" rows="3" placeholder="Anything you'd like us to know beforehand?" style="width:100%; padding:12px 14px; border-radius:9px; border:1px solid var(--border); background:#fafcfb; font-size:14px; font-family:inherit; margin-bottom:16px;"></textarea>
+      <button type="submit" class="btn-primary" style="width:100%; border:none; cursor:pointer;">Confirm Consultation Request</button>
+      <p id="booking-status" style="margin-top:14px; font-size:14px; text-align:center;"></p>
+    </form>
+  </div>
+</div>
+
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
 <script>
@@ -620,6 +662,56 @@
       statusEl.textContent = "Thanks! We'll be in touch within 24 hours.";
       statusEl.style.color = 'var(--accent)';
       leadForm.reset();
+    }
+  });
+
+  // Booking modal logic
+  function openBookingModal(){
+    document.getElementById('booking-overlay').style.display = 'flex';
+  }
+  function closeBookingModal(){
+    document.getElementById('booking-overlay').style.display = 'none';
+  }
+  document.getElementById('booking-overlay').addEventListener('click', (e) => {
+    if (e.target.id === 'booking-overlay') closeBookingModal();
+  });
+
+  const bookingForm = document.getElementById('booking-form');
+  const bookingStatus = document.getElementById('booking-status');
+
+  bookingForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(bookingForm);
+    const booking = {
+      name: formData.get('name'),
+      restaurant: formData.get('restaurant'),
+      email: formData.get('email'),
+      phone: formData.get('phone'),
+      preferred_date: formData.get('preferred_date'),
+      preferred_time: formData.get('preferred_time'),
+      notes: formData.get('notes'),
+    };
+
+    if (!supabaseClient) {
+      bookingStatus.textContent = 'Booking system is not connected yet.';
+      bookingStatus.style.color = '#e0a030';
+      return;
+    }
+
+    bookingStatus.textContent = 'Confirming your request...';
+    bookingStatus.style.color = '#a3aab0';
+
+    const { error } = await supabaseClient.from('bookings').insert([booking]);
+
+    if (error) {
+      bookingStatus.textContent = 'Something went wrong. Please try again or email us directly.';
+      bookingStatus.style.color = '#e05050';
+      console.error(error);
+    } else {
+      bookingStatus.textContent = "Request received! We'll confirm your slot by email shortly.";
+      bookingStatus.style.color = 'var(--accent)';
+      bookingForm.reset();
+      setTimeout(closeBookingModal, 2200);
     }
   });
 </script>
