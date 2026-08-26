@@ -110,7 +110,7 @@
   .trust-label{ color:var(--text-muted); font-size:12px; text-transform:uppercase; letter-spacing:.5px; }
 
   /* PROBLEM SECTION */
-  .problem-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-bottom:50px; }
+  .problem-grid{ gap:24px; margin-bottom:50px; }
   .problem-card{
     background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:30px;
     box-shadow:0 2px 12px rgba(18,24,26,0.04); width:340px;
@@ -132,10 +132,10 @@
   .receipt-tag{ display:inline-block; font-size:11px; font-weight:800; padding:4px 10px; border-radius:20px; margin-top:14px; }
   .receipt.bad .receipt-tag{ background:rgba(239,87,87,0.15); color:#ef5757; }
   .receipt.good .receipt-tag{ background:rgba(34,197,94,0.15); color:var(--accent-light); }
-  @media(max-width:860px){ .problem-grid{ grid-template-columns:1fr; } .receipt-compare{ grid-template-columns:1fr; } }
+  @media(max-width:860px){ .receipt-compare{ grid-template-columns:1fr; } }
 
   /* BENEFITS */
-  .benefits-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+  .benefits-grid{ gap:20px; }
   .benefit-card{
     background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:26px;
     transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease;
@@ -145,17 +145,15 @@
   .benefit-icon{ width:42px; height:42px; border-radius:10px; background:rgba(22,163,74,0.15); display:flex; align-items:center; justify-content:center; font-size:19px; margin-bottom:16px; }
   .benefit-card h4{ font-size:16px; margin-bottom:8px; }
   .benefit-card p{ color:var(--text-muted); font-size:13px; }
-  @media(max-width:900px){ .benefits-grid{ grid-template-columns:1fr 1fr; } }
-  @media(max-width:560px){ .benefits-grid{ grid-template-columns:1fr; } }
 
   /* SLIDER / CAROUSEL */
   .slider-wrap{ position:relative; }
   .slider-track{
-    display:flex; gap:24px; overflow-x:auto; scroll-behavior:smooth; scroll-snap-type:x mandatory;
+    display:flex; gap:24px; overflow-x:auto;
     padding-bottom:8px; -ms-overflow-style:none; scrollbar-width:none;
   }
   .slider-track::-webkit-scrollbar{ display:none; }
-  .slider-track > *{ scroll-snap-align:start; flex:0 0 auto; }
+  .slider-track > *{ flex:0 0 auto; }
   .slider-nav{ display:flex; justify-content:flex-end; gap:10px; margin-bottom:20px; }
   .slider-btn{
     width:38px; height:38px; border-radius:50%; border:1px solid var(--border); background:#fff;
@@ -188,13 +186,12 @@
   @media(max-width:860px){ .calc-box{ grid-template-columns:1fr; } }
 
   /* TESTIMONIALS */
-  .testi-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+  .testi-grid{ gap:24px; }
   .testi-card{ background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:28px; box-shadow:0 2px 12px rgba(18,24,26,0.04); width:360px; }
   .stars{ color:#f5c518; font-size:14px; margin-bottom:14px; letter-spacing:2px; }
   .testi-quote{ font-size:14px; margin-bottom:20px; color:#3a4245; }
   .testi-name{ font-weight:700; font-size:14px; }
   .testi-role{ color:var(--text-muted); font-size:12px; }
-  @media(max-width:900px){ .testi-grid{ grid-template-columns:1fr; } }
 
   /* CONTACT */
   .contact-grid{ display:grid; grid-template-columns:1fr 1.1fr; gap:50px; }
@@ -712,26 +709,45 @@
     track.scrollBy({ left: direction * cardWidth, behavior: 'smooth' });
   }
 
-  // Auto-advance carousels
-  function setupAutoplay(trackId, intervalMs){
+  // Auto-advance carousels (seamless infinite loop)
+  function setupAutoplay(trackId, speedPxPerSec){
     const track = document.getElementById(trackId);
     if (!track) return;
-    let paused = false;
-    let timer = null;
 
-    function advance(){
-      if (paused) return;
-      const card = track.querySelector(':scope > *');
-      const cardWidth = card ? card.offsetWidth + 24 : 300;
-      const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 10;
-      if (atEnd) {
-        track.scrollTo({ left: 0, behavior: 'smooth' });
-      } else {
-        track.scrollBy({ left: cardWidth, behavior: 'smooth' });
+    // Duplicate all cards once so the loop has no visible seam
+    const originalCards = Array.from(track.children);
+    originalCards.forEach(card => {
+      track.appendChild(card.cloneNode(true));
+    });
+
+    let paused = false;
+    let rafId = null;
+    let lastTime = null;
+
+    // Width of just the original set of cards (the point at which we can seamlessly reset)
+    function getLoopPoint(){
+      let width = 0;
+      for (let i = 0; i < originalCards.length; i++){
+        width += track.children[i].offsetWidth + 24;
       }
+      return width;
     }
 
-    timer = setInterval(advance, intervalMs);
+    function step(now){
+      if (lastTime === null) lastTime = now;
+      const delta = now - lastTime;
+      lastTime = now;
+
+      if (!paused){
+        track.scrollLeft += (speedPxPerSec * delta) / 1000;
+        const loopPoint = getLoopPoint();
+        if (track.scrollLeft >= loopPoint){
+          track.scrollLeft -= loopPoint;
+        }
+      }
+      rafId = requestAnimationFrame(step);
+    }
+    rafId = requestAnimationFrame(step);
 
     track.addEventListener('mouseenter', () => paused = true);
     track.addEventListener('mouseleave', () => paused = false);
@@ -739,9 +755,9 @@
     track.addEventListener('touchend', () => setTimeout(() => paused = false, 3000), { passive: true });
   }
 
-  setupAutoplay('problem-track', 3500);
-  setupAutoplay('testi-track', 4000);
-  setupAutoplay('benefits-track', 3200);
+  setupAutoplay('problem-track', 40);
+  setupAutoplay('testi-track', 35);
+  setupAutoplay('benefits-track', 45);
 
   // Booking modal logic
   function openBookingModal(){
