@@ -44,7 +44,23 @@
   .navlinks{ display:flex; gap:30px; }
   .navlinks a{ color:#222; text-decoration:none; font-size:14px; font-weight:600; }
   .nav-cta{ background:var(--accent); color:#fff; padding:11px 20px; border-radius:8px; font-size:13px; font-weight:700; text-decoration:none; white-space:nowrap; }
-  @media(max-width:860px){ .navlinks{display:none;} }
+  .nav-right{ display:flex; align-items:center; gap:16px; }
+  .hamburger{
+    display:none; flex-direction:column; gap:5px; background:none; border:none; cursor:pointer; padding:6px;
+  }
+  .hamburger span{ width:22px; height:2px; background:#141414; border-radius:2px; }
+  .mobile-menu{
+    display:none; flex-direction:column; background:#f1f1ee; border-top:1px solid #ddd;
+    padding:16px 24px 20px;
+  }
+  .mobile-menu.open{ display:flex; }
+  .mobile-menu a{ color:#222; text-decoration:none; font-size:15px; font-weight:600; padding:12px 0; border-bottom:1px solid #e2e2df; }
+  .mobile-menu a:last-child{ border-bottom:none; }
+  @media(max-width:860px){
+    .navlinks{ display:none; }
+    .nav-cta{ display:none; }
+    .hamburger{ display:flex; }
+  }
 
   /* HERO */
   .hero{
@@ -91,6 +107,27 @@
   .visual-bar{ height:34px; background:#f4f6f5; display:flex; align-items:center; gap:6px; padding:0 14px; }
   .visual-dot{ width:10px;height:10px;border-radius:50%; background:#dcdfe0; }
   .visual-body{ padding:30px; display:grid; grid-template-columns:1.3fr 1fr; gap:24px; color:#111; text-align:left; }
+
+  @media(max-width:700px){
+    .hero{ padding:70px 0 40px; }
+    h1{ font-size:34px; letter-spacing:-1px; }
+    .hero p.sub{ font-size:15px; }
+    .btn-row{ flex-direction:column; align-items:stretch; }
+    .btn-row a, .btn-row button{ text-align:center; }
+    .visual-body{ grid-template-columns:1fr; padding:20px; }
+    .trust-row{ gap:24px; }
+    section{ padding:56px 0; }
+    h2{ font-size:26px; }
+    .wrap{ padding:0 20px; }
+    .receipt-compare{ padding:20px; }
+    .calc-box{ padding:24px; }
+    .contact-form{ padding:22px; }
+    .footer-top{ flex-direction:column; }
+    .footer-cols{ gap:30px; }
+    .problem-card{ width:82vw; }
+    .benefit-card{ width:72vw; }
+    .testi-card{ width:82vw; }
+  }
   .menu-row{ display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #eee; font-size:14px; }
   .menu-row:last-child{ border-bottom:none; }
   .menu-name{ font-weight:700; }
@@ -234,7 +271,19 @@
       <a href="#testimonials">Reviews</a>
       <a href="#contact">Contact</a>
     </div>
-    <a class="nav-cta" href="#contact">Get Your Free Site Audit</a>
+    <div class="nav-right">
+      <a class="nav-cta" href="#contact">Get Your Free Site Audit</a>
+      <button class="hamburger" onclick="toggleMobileMenu()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="#benefits" onclick="closeMobileMenu()">Why Us</a>
+    <a href="#calculator" onclick="closeMobileMenu()">Savings Calculator</a>
+    <a href="#testimonials" onclick="closeMobileMenu()">Reviews</a>
+    <a href="#contact" onclick="closeMobileMenu()">Contact</a>
+    <a href="#contact" onclick="closeMobileMenu()" style="color:var(--accent); font-weight:800;">Get Your Free Site Audit</a>
   </div>
 </header>
 
@@ -469,7 +518,7 @@
       <p class="section-sub">No obligation, no pressure — just a real conversation about what switching could look like for your numbers.</p>
       <div class="contact-info-item">
         <div class="contact-icon">📞</div>
-        <div><h4>Call Us</h4><p>+1 (204) 808-8032</p></div>
+        <div><h4>Call Us</h4><p>+44 7853 104254</p></div>
       </div>
       <div class="contact-info-item">
         <div class="contact-icon">✉️</div>
@@ -525,7 +574,7 @@
         <div class="footer-col">
           <h5>Get in Touch</h5>
           <a href="mailto:contact@takeonlineorder.com">contact@takeonlineorder.com</a>
-          <a href="tel:+12048088032">+1 (204) 808-8032</a>
+          <a href="tel:+447853104254">+44 7853 104254</a>
         </div>
       </div>
     </div>
@@ -699,6 +748,14 @@
       leadForm.reset();
     }
   });
+
+  // Mobile menu
+  function toggleMobileMenu(){
+    document.getElementById('mobile-menu').classList.toggle('open');
+  }
+  function closeMobileMenu(){
+    document.getElementById('mobile-menu').classList.remove('open');
+  }
 
   // Carousel slider
   function slideCarousel(trackId, direction){
